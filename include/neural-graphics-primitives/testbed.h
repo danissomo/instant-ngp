@@ -455,6 +455,8 @@ public:
 	pybind11::array_t<float> render_to_cpu(int width, int height, int spp, bool linear, float start_t, float end_t, float fps, float shutter_fraction);
 	pybind11::array_t<float> view(bool linear, size_t view) const;
 	pybind11::array_t<float> screenshot(bool linear, bool front_buffer) const;
+	pybind11::array_t<float> py_get_rgba_on_grid(ivec3 res3d, vec3 ray_dir, bool voxel_centers, float depth, bool density_as_alpha) ;
+	
 	void override_sdf_training_data(pybind11::array_t<float> points, pybind11::array_t<float> distances);
 #endif
 

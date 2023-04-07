@@ -234,6 +234,13 @@ py::array_t<float> Testbed::view(bool linear, size_t view_idx) const {
 
 	return result;
 }
+pybind11::array_t<float> Testbed::py_get_rgba_on_grid(ivec3 res3d, vec3 ray_dir, bool voxel_centers, float depth, bool density_as_alpha) {
+	
+	auto rs = get_rgba_on_grid( res3d, ray_dir, voxel_centers, depth, density_as_alpha);
+	py::array_t<float> rgba({res3d.x, res3d.y, res3d.z, 4});
+	CUDA_CHECK_THROW(cudaMemcpy(rgba.request().ptr, rs.data() , rs.size()*4 * sizeof(float), cudaMemcpyDeviceToHost));
+	return rgba;
+}
 
 #ifdef NGP_GUI
 py::array_t<float> Testbed::screenshot(bool linear, bool front_buffer) const {
@@ -479,6 +486,15 @@ PYBIND11_MODULE(pyngp, m) {
 			"Returns a python dict with numpy arrays V (vertices), N (vertex normals), C (vertex colors), and F (triangular faces). "
 			"`thresh` is the density threshold; use 0 for SDF; 2.5 works well for NeRF. "
 			"If the aabb parameter specifies an inside-out (\"empty\") box (default), the current render_aabb bounding box is used."
+		)
+		// ivec3 res3d, vec3 ray_dir, bool voxel_centers, float depth, bool density_as_alpha
+		.def("py_get_rgba_on_grid", &Testbed::py_get_rgba_on_grid,
+		py::arg("res3d") = ivec3(256),
+		py::arg("ray_dir") = vec3(0),
+		py::arg("voxel_centers")=true,
+		py::arg("depth")=4.f,
+		py::arg("density_as_alpha")=true,
+		"compute rgba grid"
 		)
 		// Interesting members.
 		.def_readwrite("dynamic_res", &Testbed::m_dynamic_res)
